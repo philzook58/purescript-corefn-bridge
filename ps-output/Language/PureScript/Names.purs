@@ -13,21 +13,6 @@ import Prim (Array, String)
 import Prelude
 import Data.Generic (class Generic)
 
-newtype ProperName 'TypeName =
-    ProperName {
-      runProperName :: String
-    }
-
-derive instance genericProperName :: Generic (ProperName 'TypeName)
-
-derive instance newtypeProperName :: Newtype (ProperName 'TypeName) _
-
-
---------------------------------------------------------------------------------
-_ProperName :: forall 'TypeName. Iso' (ProperName 'TypeName) { runProperName :: String}
-_ProperName = _Newtype
-
---------------------------------------------------------------------------------
 data Ident =
     Ident String
   | GenIdent (Maybe String) Integer
@@ -63,7 +48,7 @@ _Qualified = prism' (\{ a, b } -> Qualified a b) f
 
 --------------------------------------------------------------------------------
 newtype ModuleName =
-    ModuleName (Array (ProperName 'Namespace))
+    ModuleName (Array (ProperName Namespace))
 
 derive instance genericModuleName :: Generic ModuleName
 
@@ -71,6 +56,86 @@ derive instance newtypeModuleName :: Newtype ModuleName _
 
 
 --------------------------------------------------------------------------------
-_ModuleName :: Iso' ModuleName (Array (ProperName 'Namespace))
+_ModuleName :: Iso' ModuleName (Array (ProperName Namespace))
 _ModuleName = _Newtype
+--------------------------------------------------------------------------------
+newtype ProperName a =
+    ProperName {
+      runProperName :: String
+    }
+
+derive instance genericProperName :: Generic (ProperName a)
+
+derive instance newtypeProperName :: Newtype (ProperName a) _
+
+
+--------------------------------------------------------------------------------
+_ProperName :: forall a. Iso' (ProperName a) { runProperName :: String}
+_ProperName = _Newtype
+
+--------------------------------------------------------------------------------
+data TypeName =
+    DKTypeName
+
+derive instance genericTypeName :: Generic TypeName
+
+
+--------------------------------------------------------------------------------
+_DKTypeName :: Prism' TypeName Unit
+_DKTypeName = prism' (\_ -> DKTypeName) f
+  where
+    f DKTypeName = Just unit
+
+--------------------------------------------------------------------------------
+data ConstructorName =
+    DKConstructorName
+
+derive instance genericConstructorName :: Generic ConstructorName
+
+
+--------------------------------------------------------------------------------
+_DKConstructorName :: Prism' ConstructorName Unit
+_DKConstructorName = prism' (\_ -> DKConstructorName) f
+  where
+    f DKConstructorName = Just unit
+
+--------------------------------------------------------------------------------
+data ClassName =
+    DKClassName
+
+derive instance genericClassName :: Generic ClassName
+
+
+--------------------------------------------------------------------------------
+_DKClassName :: Prism' ClassName Unit
+_DKClassName = prism' (\_ -> DKClassName) f
+  where
+    f DKClassName = Just unit
+
+--------------------------------------------------------------------------------
+data KindName =
+    DKKindName
+
+derive instance genericKindName :: Generic KindName
+
+
+--------------------------------------------------------------------------------
+_DKKindName :: Prism' KindName Unit
+_DKKindName = prism' (\_ -> DKKindName) f
+  where
+    f DKKindName = Just unit
+
+--------------------------------------------------------------------------------
+data Namespace =
+    DKNamespace
+
+derive instance genericNamespace :: Generic Namespace
+
+
+--------------------------------------------------------------------------------
+_DKNamespace :: Prism' Namespace Unit
+_DKNamespace = prism' (\_ -> DKNamespace) f
+  where
+    f DKNamespace = Just unit
+
 --------------------------------------------------------------------------------

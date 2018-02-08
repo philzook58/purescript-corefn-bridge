@@ -11,7 +11,7 @@ import Data.Symbol (SProxy(SProxy))
 import Data.Tuple (Tuple)
 import Language.PureScript.AST.Literals (Literal)
 import Language.PureScript.CoreFn.Binders (Binder)
-import Language.PureScript.Names ('ConstructorName, 'TypeName, Ident, ProperName, Qualified)
+import Language.PureScript.Names (ConstructorName, Ident, ProperName, Qualified, TypeName)
 import Language.PureScript.PSString (PSString)
 import Prim (Array)
 
@@ -20,7 +20,7 @@ import Data.Generic (class Generic)
 
 data Expr a =
     Literal a (Literal (Expr a))
-  | Constructor a (ProperName 'TypeName) (ProperName 'ConstructorName) (Array Ident)
+  | Constructor a (ProperName TypeName) (ProperName ConstructorName) (Array Ident)
   | Accessor a PSString (Expr a)
   | ObjectUpdate a (Expr a) (Array (Tuple PSString (Expr a)))
   | Abs a Ident (Expr a)
@@ -39,7 +39,7 @@ _Literal = prism' (\{ a, b } -> Literal a b) f
     f (Literal a b) = Just $ { a: a, b: b }
     f _ = Nothing
 
-_Constructor :: forall a. Prism' (Expr a) { a :: a, b :: ProperName 'TypeName, c :: ProperName 'ConstructorName, d :: Array Ident }
+_Constructor :: forall a. Prism' (Expr a) { a :: a, b :: ProperName TypeName, c :: ProperName ConstructorName, d :: Array Ident }
 _Constructor = prism' (\{ a, b, c, d } -> Constructor a b c d) f
   where
     f (Constructor a b c d) = Just $ { a: a, b: b, c: c, d: d }
@@ -111,7 +111,7 @@ _Rec = prism' Rec f
 --------------------------------------------------------------------------------
 data Expr a =
     Literal a (Literal (Expr a))
-  | Constructor a (ProperName 'TypeName) (ProperName 'ConstructorName) (Array Ident)
+  | Constructor a (ProperName TypeName) (ProperName ConstructorName) (Array Ident)
   | Accessor a PSString (Expr a)
   | ObjectUpdate a (Expr a) (Array (Tuple PSString (Expr a)))
   | Abs a Ident (Expr a)
@@ -130,7 +130,7 @@ _Literal = prism' (\{ a, b } -> Literal a b) f
     f (Literal a b) = Just $ { a: a, b: b }
     f _ = Nothing
 
-_Constructor :: forall a. Prism' (Expr a) { a :: a, b :: ProperName 'TypeName, c :: ProperName 'ConstructorName, d :: Array Ident }
+_Constructor :: forall a. Prism' (Expr a) { a :: a, b :: ProperName TypeName, c :: ProperName ConstructorName, d :: Array Ident }
 _Constructor = prism' (\{ a, b, c, d } -> Constructor a b c d) f
   where
     f (Constructor a b c d) = Just $ { a: a, b: b, c: c, d: d }
