@@ -143,6 +143,7 @@ myTypes =  [
 -- That is SO much better        
 myDataKinds =(mkDataKinds (Proxy :: Proxy (N.ProperNameType)))
 
+data Dummy :: N.ProperNameType
 
 properName = 
       let st = mkSumType (Proxy :: Proxy (N.ProperName 'TypeName)) in
