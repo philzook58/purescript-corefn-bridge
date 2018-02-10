@@ -27,21 +27,33 @@ import           Control.Lens
 --import Language.PureScript.Bridge.SumType (GDataConstructor)
 
 import qualified Language.PureScript.CoreFn.Expr as E
+import qualified Language.PureScript.CoreFn.Binders as B
 import qualified Language.PureScript.CoreFn.Module as M
 import qualified Language.PureScript.Names as N
 import           Language.PureScript.Names (ProperNameType(..))
 import qualified Language.PureScript.Comments as C
 import qualified Language.PureScript.Types as TY
+import qualified Language.PureScript.Kinds as K
+import qualified Language.Purescript.AST.Literals as L
+import qualified Language.Purescript.AST.SourcePos as S
+import qualified Language.PureScript.Label as Label
+
 
 
 vectorBridge :: BridgePart -- Converts Haskell Vector type to Purescript Array type.
 vectorBridge = typeName ^== "Vector" >> psArray
 
+stringBridge :: BridgePart -- Converts Haskell Vector type to Purescript Array type.
+stringBridge = typeName ^== "PSString" >> psString
+
+integerBridge :: BridgePart -- Converts Haskell Vector type to Purescript Array type.
+integerBridge = typeName ^== "Integer" >> psInteger
+
 --dataKindBridge :: BridgePart -- Converts Haskell Vector type to Purescript Array type.
 --dataKindBridge = (typeName . packed . ix 0) ^== "'" >> psArray
 
 myBridge :: BridgePart
-myBridge =  vectorBridge <|> defaultBridge <|> dataKindsFixUp
+myBridge =  vectorBridge <|> defaultBridge <|> dataKindsFixUp <|> stringBridge
 
 
 --dataKind :: forall t. (Generic t, Typeable t, GDataConstructor (Rep t)) => Proxy t -> [SumType 'Haskell]
@@ -134,6 +146,9 @@ myTypes =  [
             , mkSumType (Proxy :: Proxy (C.Comment))
 
             , mkSumType (Proxy :: Proxy (TY.Type))
+            , mkSumType (Proxy :: Proxy (L.Literal))
+            , mkSumType (Proxy :: Proxy (B.Binder))
+            , mkSumType (Proxy :: Proxy (S.SourceSpan))
             , properName
             
 
