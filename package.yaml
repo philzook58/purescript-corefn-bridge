@@ -50,6 +50,28 @@ executables:
     - mtl
     - generic-deriving
     - purescript
+    - aeson
+    - bytestring
+  corefnread-exe:
+    main:                Main.hs
+    source-dirs:         corefn
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - testproj
+    - purescript-bridge
+    - lens
+    - containers
+    - text
+    - mtl
+    - generic-deriving
+    - purescript
+    - aeson
+    - bytestring
+
+
 
 tests:
   testproj-test:

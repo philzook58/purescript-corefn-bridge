@@ -36,14 +36,22 @@ resolver: lts-10.4
 # non-dependency (i.e. a user package), and its test suites and benchmarks
 # will not be run. This is useful for tweaking upstream packages.
 packages:
+- location:
+    git: https://github.com/purescript/purescript.git
+    commit: f999179792ae2c49b2ad3019959081540da0ad9f
 - .
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
-- purescript-0.11.7
-- Glob-0.8.0
-- ansi-terminal-0.6.3.1
+#- Glob-0.8.0
+#- ansi-terminal-0.6.3.1
 - pipes-http-1.0.5
+- Glob-0.9.1
+- ansi-terminal-0.7.1.1
+#- purescript-0.11.7
+- git: https://github.com/purescript/purescript.git
+  commit: f999179792ae2c49b2ad3019959081540da0ad9f
+
 # Override default flag values for local packages and extra-deps
 # flags: {}
 
