@@ -7,15 +7,14 @@ import Data.Lens.Record (prop)
 import Data.Maybe (Maybe, Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Symbol (SProxy(SProxy))
-import GHC.Integer.Type (Integer)
-import Prim (Array, String)
+import Prim (Array, Int, String)
 
 import Prelude
 import Data.Generic (class Generic)
 
 data Ident =
     Ident String
-  | GenIdent (Maybe String) Integer
+  | GenIdent (Maybe String) Int
 
 derive instance genericIdent :: Generic Ident
 
@@ -27,7 +26,7 @@ _Ident = prism' Ident f
     f (Ident a) = Just $ a
     f _ = Nothing
 
-_GenIdent :: Prism' Ident { a :: Maybe String, b :: Integer }
+_GenIdent :: Prism' Ident { a :: Maybe String, b :: Int }
 _GenIdent = prism' (\{ a, b } -> GenIdent a b) f
   where
     f (GenIdent a b) = Just $ { a: a, b: b }
@@ -72,6 +71,21 @@ derive instance newtypeProperName :: Newtype (ProperName a) _
 --------------------------------------------------------------------------------
 _ProperName :: forall a. Iso' (ProperName a) { runProperName :: String}
 _ProperName = _Newtype
+
+--------------------------------------------------------------------------------
+newtype OpName a =
+    OpName {
+      runOpName :: String
+    }
+
+derive instance genericOpName :: Generic (OpName a)
+
+derive instance newtypeOpName :: Newtype (OpName a) _
+
+
+--------------------------------------------------------------------------------
+_OpName :: forall a. Iso' (OpName a) { runOpName :: String}
+_OpName = _Newtype
 
 --------------------------------------------------------------------------------
 data TypeName =
@@ -137,5 +151,31 @@ _DKNamespace :: Prism' Namespace Unit
 _DKNamespace = prism' (\_ -> DKNamespace) f
   where
     f DKNamespace = Just unit
+
+--------------------------------------------------------------------------------
+data ValueOpName =
+    DKValueOpName
+
+derive instance genericValueOpName :: Generic ValueOpName
+
+
+--------------------------------------------------------------------------------
+_DKValueOpName :: Prism' ValueOpName Unit
+_DKValueOpName = prism' (\_ -> DKValueOpName) f
+  where
+    f DKValueOpName = Just unit
+
+--------------------------------------------------------------------------------
+data TypeOpName =
+    DKTypeOpName
+
+derive instance genericTypeOpName :: Generic TypeOpName
+
+
+--------------------------------------------------------------------------------
+_DKTypeOpName :: Prism' TypeOpName Unit
+_DKTypeOpName = prism' (\_ -> DKTypeOpName) f
+  where
+    f DKTypeOpName = Just unit
 
 --------------------------------------------------------------------------------

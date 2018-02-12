@@ -10,9 +10,8 @@ import Data.Symbol (SProxy(SProxy))
 import Language.PureScript.AST.SourcePos (SourceSpan)
 import Language.PureScript.Kinds (Kind)
 import Language.PureScript.Label (Label)
-import Language.PureScript.Names (OpName, ProperName, Qualified, TypeName, TypeOpName)
-import Language.PureScript.PSString (PSString)
-import Prim (Array, Int, String)
+import Language.PureScript.Names (ClassName, OpName, ProperName, Qualified, TypeName, TypeOpName)
+import Prim (Array, Boolean, Int, String)
 
 import Prelude
 import Data.Generic (class Generic)
@@ -20,7 +19,7 @@ import Data.Generic (class Generic)
 data Type =
     TUnknown Int
   | TypeVar String
-  | TypeLevelString PSString
+  | TypeLevelString String
   | TypeWildcard SourceSpan
   | TypeConstructor (Qualified (ProperName TypeName))
   | TypeOp (Qualified (OpName TypeOpName))
@@ -53,7 +52,7 @@ _TypeVar = prism' TypeVar f
     f (TypeVar a) = Just $ a
     f _ = Nothing
 
-_TypeLevelString :: Prism' Type PSString
+_TypeLevelString :: Prism' Type String
 _TypeLevelString = prism' TypeLevelString f
   where
     f (TypeLevelString a) = Just $ a
@@ -148,5 +147,50 @@ _ParensInType = prism' ParensInType f
   where
     f (ParensInType a) = Just $ a
     f _ = Nothing
+
+--------------------------------------------------------------------------------
+newtype SkolemScope =
+    SkolemScope {
+      runSkolemScope :: Int
+    }
+
+derive instance genericSkolemScope :: Generic SkolemScope
+
+derive instance newtypeSkolemScope :: Newtype SkolemScope _
+
+
+--------------------------------------------------------------------------------
+_SkolemScope :: Iso' SkolemScope { runSkolemScope :: Int}
+_SkolemScope = _Newtype
+
+--------------------------------------------------------------------------------
+newtype Constraint =
+    Constraint {
+      constraintClass :: Qualified (ProperName ClassName)
+    , constraintArgs :: Array Type
+    , constraintData :: Maybe ConstraintData
+    }
+
+derive instance genericConstraint :: Generic Constraint
+
+derive instance newtypeConstraint :: Newtype Constraint _
+
+
+--------------------------------------------------------------------------------
+_Constraint :: Iso' Constraint { constraintClass :: Qualified (ProperName ClassName), constraintArgs :: Array Type, constraintData :: Maybe ConstraintData}
+_Constraint = _Newtype
+
+--------------------------------------------------------------------------------
+data ConstraintData =
+    PartialConstraintData (Array (Array String)) Boolean
+
+derive instance genericConstraintData :: Generic ConstraintData
+
+
+--------------------------------------------------------------------------------
+_PartialConstraintData :: Prism' ConstraintData { a :: Array (Array String), b :: Boolean }
+_PartialConstraintData = prism' (\{ a, b } -> PartialConstraintData a b) f
+  where
+    f (PartialConstraintData a b) = Just $ { a: a, b: b }
 
 --------------------------------------------------------------------------------

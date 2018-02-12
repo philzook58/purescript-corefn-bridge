@@ -24,6 +24,14 @@ dependencies:
 
 library:
   source-dirs: src
+  dependencies:
+    - purescript-bridge
+    - lens
+    - containers
+    - text
+    - mtl
+    - generic-deriving
+    - purescript
 
 executables:
   testproj-exe:
@@ -35,6 +43,13 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - testproj
+    - purescript-bridge
+    - lens
+    - containers
+    - text
+    - mtl
+    - generic-deriving
+    - purescript
 
 tests:
   testproj-test:

@@ -30,12 +30,12 @@ import qualified Language.PureScript.CoreFn.Expr as E
 import qualified Language.PureScript.CoreFn.Binders as B
 import qualified Language.PureScript.CoreFn.Module as M
 import qualified Language.PureScript.Names as N
-import           Language.PureScript.Names (ProperNameType(..))
+import           Language.PureScript.Names (ProperNameType(..), OpNameType(..))
 import qualified Language.PureScript.Comments as C
 import qualified Language.PureScript.Types as TY
 import qualified Language.PureScript.Kinds as K
-import qualified Language.Purescript.AST.Literals as L
-import qualified Language.Purescript.AST.SourcePos as S
+import qualified Language.PureScript.AST.Literals as L
+import qualified Language.PureScript.AST.SourcePos as S
 import qualified Language.PureScript.Label as Label
 
 
@@ -43,17 +43,20 @@ import qualified Language.PureScript.Label as Label
 vectorBridge :: BridgePart -- Converts Haskell Vector type to Purescript Array type.
 vectorBridge = typeName ^== "Vector" >> psArray
 
-stringBridge :: BridgePart -- Converts Haskell Vector type to Purescript Array type.
-stringBridge = typeName ^== "PSString" >> psString
+psstringBridge :: BridgePart -- Converts Haskell Vector type to Purescript Array type.
+psstringBridge = typeName ^== "PSString" >> (return psString)
 
 integerBridge :: BridgePart -- Converts Haskell Vector type to Purescript Array type.
-integerBridge = typeName ^== "Integer" >> psInteger
+integerBridge = typeName ^== "Integer" >> (return psInt)
+
+charBridge :: BridgePart -- Converts Haskell Vector type to Purescript Array type.
+charBridge = typeName ^== "Char" >> (return psString)
 
 --dataKindBridge :: BridgePart -- Converts Haskell Vector type to Purescript Array type.
 --dataKindBridge = (typeName . packed . ix 0) ^== "'" >> psArray
 
 myBridge :: BridgePart
-myBridge =  vectorBridge <|> defaultBridge <|> dataKindsFixUp <|> stringBridge
+myBridge =  charBridge <|> integerBridge <|> psstringBridge <|> vectorBridge <|> defaultBridge <|> dataKindsFixUp 
 
 
 --dataKind :: forall t. (Generic t, Typeable t, GDataConstructor (Rep t)) => Proxy t -> [SumType 'Haskell]
@@ -123,6 +126,11 @@ deriving instance Generic (M.Module a)
 deriving instance Generic (C.Comment)
 
 deriving instance Generic (N.ProperNameType)
+deriving instance Generic (N.OpNameType)
+
+deriving instance Generic (B.Binder a)
+
+deriving instance Generic (L.Literal a)
 
 --deriving instance Typeable ('TypeName)
 
@@ -130,7 +138,7 @@ myTypes :: [SumType 'Haskell]
 myTypes =  [
               mkSumType (Proxy :: Proxy (E.Expr A))
             , mkSumType (Proxy :: Proxy (E.Bind A))
-            , mkSumType (Proxy :: Proxy (E.Guard A))
+            --, mkSumType (Proxy :: Proxy (E.Guard A))
             , mkSumType (Proxy :: Proxy (E.CaseAlternative A))
 
             , mkSumType (Proxy :: Proxy (M.Module A))
@@ -140,25 +148,35 @@ myTypes =  [
             --, mkSumType (Proxy :: Proxy (N.ProperName 'TypeName))
             --, mkSumType (Proxy :: Proxy ('TypeName))
             , mkSumType (Proxy :: Proxy (N.Ident))
+            --, mkSumType (Proxy :: Proxy (N.OpName ValueOpName))
             , mkSumType (Proxy :: Proxy (N.Qualified A))
             , mkSumType (Proxy :: Proxy (N.ModuleName))
+            , properName
+            , opName
 
             , mkSumType (Proxy :: Proxy (C.Comment))
 
             , mkSumType (Proxy :: Proxy (TY.Type))
-            , mkSumType (Proxy :: Proxy (L.Literal))
-            , mkSumType (Proxy :: Proxy (B.Binder))
+            , mkSumType (Proxy :: Proxy (TY.SkolemScope))
+            , mkSumType (Proxy :: Proxy (TY.Constraint))
+            , mkSumType (Proxy :: Proxy (TY.ConstraintData))
+            , mkSumType (Proxy :: Proxy (L.Literal A))
+            , mkSumType (Proxy :: Proxy (B.Binder A))
             , mkSumType (Proxy :: Proxy (S.SourceSpan))
-            , properName
+            , mkSumType (Proxy :: Proxy (S.SourcePos))
+            , mkSumType (Proxy :: Proxy (K.Kind))
+            , mkSumType (Proxy :: Proxy (Label.Label))
+
+
             
 
           ]
 
 -- I didn't need to do it this way. I could have leverage mkSumType and then used lenses to re-edit it.  
 -- That is SO much better        
-myDataKinds =(mkDataKinds (Proxy :: Proxy (N.ProperNameType)))
+myDataKinds =(mkDataKinds (Proxy :: Proxy (N.ProperNameType))) ++ (mkDataKinds (Proxy :: Proxy (N.OpNameType))) 
 
-data Dummy :: N.ProperNameType
+--data Dummy :: N.ProperNameType
 
 properName = 
       let st = mkSumType (Proxy :: Proxy (N.ProperName 'TypeName)) in
@@ -169,9 +187,16 @@ properName =
     , _typeParameters = []
        }] st
 
+opName = let st = mkSumType (Proxy :: Proxy (N.OpName 'ValueOpName)) in
+              set (sumTypeInfo . typeParameters) [TypeInfo {
+              _typePackage = ""
+            , _typeModule  = ""
+            , _typeName    = "a"
+            , _typeParameters = []
+               }] st
 
 -- fixDataKindParameters . 
 main :: IO ()
 main = do
-  let path = "./ps-output"
+  let path = "./ps/src/ps-output"
   writePSTypes path ((buildBridge myBridge)) (myTypes ++ myDataKinds)
